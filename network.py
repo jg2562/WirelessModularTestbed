@@ -17,7 +17,7 @@ def create_fifo(filename):
     fifo_files.add(file_path)
     return file_path
 
-def create_process(process_name, *args):
+def create_process(process_name, args):
     process_run = process_name.split(" ") + list(args)
     print(process_run)
     process = sp.Popen(" ".join(process_run), shell=True)
@@ -25,14 +25,16 @@ def create_process(process_name, *args):
     processes.append(process)
     return process
 
-def create_connection(connection_type, connection_mode,*args):
+def create_connection(data):
+    connection_type, connection_mode, *args = data.split(" ")
     file_paths = [create_fifo(connection_type + "_" + mode) for mode in connection_mode]
     process = create_process(config["processes"][connection_type], connection_mode, *file_paths, *args)
     return " ".join(file_paths)
 
 def process_command(command_list):
     commands = {"create": create_connection}
-    return commands[command_list[0]](*command_list[1:])
+    command_name, *command_data = command_list
+    return commands[command_name](command_data)
 
 def handle_connection(conn, address):
     try:
@@ -41,7 +43,7 @@ def handle_connection(conn, address):
             buf = conn.recv(1024)
             data += buf.decode('utf-8')
         data = data[:-1].strip()
-        val = process_command(data.split(" "))
+        val = process_command(data.split(" ", 1))
         print("Sending val: {}".format(val))
         conn.send(val.encode('utf-8') + b'\0')
     except IOError:
