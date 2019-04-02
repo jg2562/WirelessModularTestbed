@@ -6,7 +6,7 @@ pipe_path = "/tmp/wmtb"
 server_socket = "network_command"
 port = 65432
 
-config = {"processes":{"echo":"python3 test/echo.py"}}
+config = {"processes":{"echo":"python3 antennas/echo.py"}}
 processes = []
 fifo_files = set()
 
