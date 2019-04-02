@@ -17,7 +17,7 @@ def create_fifo(filename):
     fifo_files.add(file_path)
     return file_path
 
-def create_process(process_name, args):
+def create_process(process_name, *args):
     process_run = process_name.split(" ") + list(args)
     print(process_run)
     process = sp.Popen(" ".join(process_run), shell=True)
@@ -33,7 +33,7 @@ def create_connection(data):
 
 def process_command(command_list):
     commands = {"create": create_connection}
-    command_name, *command_data = command_list
+    command_name, command_data = command_list
     return commands[command_name](command_data)
 
 def handle_connection(conn, address):
