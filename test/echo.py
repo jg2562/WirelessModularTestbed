@@ -27,7 +27,6 @@ try:
         try:
             buff = os.read(fh_in, 1024)
             if buff:
-                print(buff)
                 os.write(fh_out, buff)
         except BlockingIOError as E:
             if E.errno != 11:
