@@ -1,8 +1,4 @@
 #!/usr/bin/python3
-# file: l2capclient.py
-# desc: Demo L2CAP server for pybluez.
-# $Id: l2capserver.py 524 2007-08-15 04:04:52Z albert $
-
 import argparse
 import os
 import time
