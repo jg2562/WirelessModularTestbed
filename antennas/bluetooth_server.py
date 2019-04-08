@@ -20,7 +20,7 @@ bt_sock_server = bluetooth.BluetoothSocket(bluetooth.L2CAP)
 fh_out = os.open(args.in_filename, os.O_WRONLY)
 fh_in = os.open(args.out_filename, os.O_RDONLY|os.O_NONBLOCK)
 
-bt_sock_server.bind(("", parser.bluetooth_port))
+bt_sock_server.bind(("", args.bluetooth_port))
 bt_sock_server.listen(1)
 
 print("Waiting connection")
