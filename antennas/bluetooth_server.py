@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('mode')
 parser.add_argument('in_filename')
 parser.add_argument('out_filename')
-parser.add_argument('bluetooth_port')
+parser.add_argument('bluetooth_port', type=int)
 
 args = parser.parse_args()
 mode = args.mode
