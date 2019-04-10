@@ -8,7 +8,7 @@ parser.add_argument('mode')
 parser.add_argument('in_filename')
 parser.add_argument('out_filename')
 parser.add_argument('bluetooth_address')
-parser.add_argument('bluetooth_port')
+parser.add_argument('bluetooth_port', type=int)
 
 args = parser.parse_args()
 mode = args.mode
@@ -21,7 +21,9 @@ bt_sock = bluetooth.BluetoothSocket(bluetooth.L2CAP)
 fh_out = os.open(args.in_filename, os.O_WRONLY)
 fh_in = os.open(args.out_filename, os.O_RDONLY|os.O_NONBLOCK)
 
-bt_sock.connect((parser.bluetooth_address, parser.bluetooth_port))
+bt_add = args.bluetooth_address
+bt_port = args.bluetooth_port
+bt_sock.connect((bt_add, bt_port))
 
 print("Waiting for comms")
 try:
