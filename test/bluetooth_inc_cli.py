@@ -4,6 +4,8 @@ import time
 
 server_address = "network_command"
 port = 65432
+bt_add = "B8:27:EB:4B:65:06"
+bt_port = 0x1001
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
@@ -18,7 +20,7 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create bluetooth_client rw")
+        data = send_command("create bluetooth_client rw {} {}".format(bt_add,bt_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 
