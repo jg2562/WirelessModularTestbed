@@ -46,7 +46,6 @@ def handle_connection(conn, address):
             data += buf.decode('utf-8')
         data = data[:-1].strip()
         val = process_command(data.split(" ", 1))
-        print("Sending val: {}".format(val))
         conn.send(val.encode('utf-8') + b'\0')
     except IOError:
         pass
