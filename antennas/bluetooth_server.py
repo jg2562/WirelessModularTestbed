@@ -33,7 +33,12 @@ try:
             if buff:
                 bt_sock.send(buff)
 
-            bt_sock.recv(1024)
+        except BlockingIOError as E:
+            if E.errno != 11:
+                raise E
+
+        try:
+            buff = bt_sock.recv(1024)
             if buff:
                 os.write(fh_out, buff)
             
