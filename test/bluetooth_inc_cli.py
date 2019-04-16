@@ -20,12 +20,13 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create bluetooth_client rw {} {}".format(bt_add,bt_port))
+        data = send_command("create bluetooth_client rw --address {} --port {}".format(bt_add,bt_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 
-        in_fh = os.open(in_file, os.O_RDONLY|os.O_NONBLOCK)
+        in_fh = os.open(in_file, os.O_RDONLY)
         out_fh = os.open(out_file, os.O_WRONLY)
+        time.sleep(5)
         print("Starting communication")
         os.write(out_fh, b'1')
         while True:

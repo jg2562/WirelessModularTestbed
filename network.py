@@ -7,8 +7,8 @@ server_socket = "network_command"
 port = 65432
 
 config = {"processes":{"echo":"python3 antennas/echo.py",
-                       "bluetooth_client":"python3 antennas/bluetooth_client.py",
-                       "bluetooth_server":"python3 antennas/bluetooth_server.py"}}
+                       "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
+                       "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
 processes = []
 fifo_files = set()
 

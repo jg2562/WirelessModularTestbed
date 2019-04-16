@@ -19,7 +19,7 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create bluetooth_server rw " + str(bt_port))
+        data = send_command("create bluetooth_server rw --port " + str(bt_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 
