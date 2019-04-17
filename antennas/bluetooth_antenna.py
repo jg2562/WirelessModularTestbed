@@ -27,7 +27,7 @@ fh_in = os.open(args.out_filename, os.O_RDONLY)
 def start_bluetooth(sock, args):
     def client(address, port):
         sock.connect((address, port))
-        return bt_sock
+        return sock
 
     def server(port):
         sock.bind(("", port))
