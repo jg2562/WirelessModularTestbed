@@ -44,13 +44,11 @@ def start_bluetooth(sock, args):
 bt_sock = start_bluetooth(sock, args)
 
 def receive_bluetooth():
-    print("receiving")
     buff = bt_sock.recv(1024)
     if buff:
         os.write(fh_out, buff)
 
 def send_bluetooth():
-    print("sending")
     buff = os.read(fh_in, 1024)
     if buff:
         bt_sock.send(buff)
