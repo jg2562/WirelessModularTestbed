@@ -26,9 +26,9 @@ class Antenna:
 
 class NetworkManager:
     def __init__(self):
-        self.server_socket_name = "network_command"
 
-        self.config = {"pipe dir": "/tmp/wmtb",
+        self.config = {"server socket": "network_command",
+                       "pipe dir": "/tmp/wmtb",
                        "processes":{"echo":"python3 antennas/echo.py",
                                     "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
                                     "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
@@ -39,12 +39,12 @@ class NetworkManager:
 
 
         try:
-            os.remove(self.server_socket_name)
+            os.remove(self.config["server socket"])
         except OSError:
             pass
 
         self.server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.server_socket.bind(self.server_socket_name)
+        self.server_socket.bind(self.config["server socket"])
         self.server_socket.listen()
 
     def process(self):
@@ -54,7 +54,7 @@ class NetworkManager:
     def close(self):
         [antenna.close() for antenna in self.antennas]
         self.server_socket.close()
-        os.remove(self.server_socket_name)
+        os.remove(self.config["server socket"])
 
     def _create_connection(self, data):
         antenna = Antenna(data, self.pipe_path)
