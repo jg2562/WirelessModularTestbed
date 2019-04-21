@@ -27,7 +27,6 @@ class Antenna:
 class NetworkManager:
     def __init__(self):
         self.server_socket_name = "network_command"
-        self.port = 65432
 
         self.config = {"pipe dir": "/tmp/wmtb",
                        "processes":{"echo":"python3 antennas/echo.py",
