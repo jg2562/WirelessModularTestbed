@@ -58,7 +58,7 @@ class NetworkManager:
         self.server_socket.listen()
 
     def _create_connection(self, data):
-        antenna = Antenna(data, self.pipe_path)
+        antenna = Antenna(data, self.config["pipe dir"])
         print("started antenna")
         self.antennas.append(antenna)
         return " ".join(antenna.get_interfaces())
