@@ -25,13 +25,9 @@ class Antenna:
         return file
 
 class NetworkManager:
-    def __init__(self):
+    def __init__(self, config):
 
-        self.config = {"server socket": "network_command",
-                       "pipe dir": "/tmp/wmtb",
-                       "processes":{"echo":"python3 antennas/echo.py",
-                                    "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
-                                    "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
+        self.config = config
 
         os.makedirs(self.config["pipe dir"],exist_ok=True)
         self.antennas = []
@@ -86,7 +82,13 @@ class NetworkManager:
 
 
 def main():
-    manager = NetworkManager()
+    config = {"server socket": "network_command",
+              "pipe dir": "/tmp/wmtb",
+              "processes":{"echo":"python3 antennas/echo.py",
+                           "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
+                           "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
+
+    manager = NetworkManager(config)
     try:
         while True:
             manager.process()
