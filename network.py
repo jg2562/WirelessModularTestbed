@@ -26,15 +26,15 @@ class Antenna:
 
 class NetworkManager:
     def __init__(self):
-        self.pipe_path = "/tmp/wmtb"
         self.server_socket_name = "network_command"
         self.port = 65432
 
-        self.config = {"processes":{"echo":"python3 antennas/echo.py",
-                            "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
-                            "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
+        self.config = {"pipe dir": "/tmp/wmtb",
+                       "processes":{"echo":"python3 antennas/echo.py",
+                                    "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
+                                    "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
 
-        os.makedirs(self.pipe_path,exist_ok=True)
+        os.makedirs(self.config["pipe dir"],exist_ok=True)
         self.antennas = []
         self.fifo_files = set()
 
