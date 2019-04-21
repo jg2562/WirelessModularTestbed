@@ -26,10 +26,22 @@ class Antenna:
 
 class NetworkManager:
     def __init__(self, config):
-        setup(config)
+        self._setup(config)
+        
+    def reset(self, config):
+        self.close()
+        self._setup(config)
 
+    def process(self):
+        conn, addr = self.server_socket.accept()
+        self._handle_connection(conn, addr)
 
-    def setup(self, config):
+    def close(self):
+        [antenna.close() for antenna in self.antennas]
+        self.server_socket.close()
+        os.remove(self.config["server socket"])
+
+    def _setup(self, config):
         self.config = config
 
         os.makedirs(self.config["pipe dir"],exist_ok=True)
@@ -44,15 +56,6 @@ class NetworkManager:
         self.server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server_socket.bind(self.config["server socket"])
         self.server_socket.listen()
-
-    def process(self):
-        conn, addr = self.server_socket.accept()
-        self._handle_connection(conn, addr)
-
-    def close(self):
-        [antenna.close() for antenna in self.antennas]
-        self.server_socket.close()
-        os.remove(self.config["server socket"])
 
     def _create_connection(self, data):
         antenna = Antenna(data, self.pipe_path)
