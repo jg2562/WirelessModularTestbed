@@ -2,79 +2,96 @@ import os
 import socket
 import subprocess as sp
 
-pipe_path = "/tmp/wmtb"
-server_socket = "network_command"
-port = 65432
+class Antenna:
+    def __init__(self, data, file_path):
+        self.ant_type, self.modes, *process_args = data.split(" ")
+        self.interfaces = {mode:self._create_fifo(self._create_filename(file_path, mode)) for mode in self.modes}
+        
+        self.process = sp.Popen(" ".join(process_args), shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
-config = {"processes":{"echo":"python3 antennas/echo.py",
-                       "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
-                       "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
-processes = []
-fifo_files = set()
+    def get_interfaces(self):
+        return [self.interfaces[mode] for mode in self.modes]
 
-def create_fifo(filename):
-    file_path = os.path.join(pipe_path,filename)
-    if not os.path.exists(file_path):
-        os.mkfifo(file_path)
-    fifo_files.add(file_path)
-    return file_path
+    def close(self):
+        self.process.terminate()
+        [os.remove(self.interfaces[mode]) for mode in self.interfaces]
 
-def create_process(process_name, *args):
-    process_run = process_name.split(" ") + list(args)
-    print(process_run)
-    process = sp.Popen(" ".join(process_run), shell=True)
-    print("started process")
-    processes.append(process)
-    return process
+    def _create_filename(self, file_path, mode):
+        return os.path.join(file_path, self.ant_type + "_" + mode)
 
-def create_connection(data):
-    connection_type, connection_mode, *args = data.split(" ")
-    file_paths = [create_fifo(connection_type + "_" + mode) for mode in connection_mode]
-    process = create_process(config["processes"][connection_type], connection_mode, *file_paths, *args)
-    return " ".join(file_paths)
+    def _create_fifo(self, file):
+        if not os.path.exists(file):
+            os.mkfifo(file)
+        return file
 
-def process_command(command_list):
-    commands = {"create": create_connection}
-    command_name, command_data = command_list
-    return commands[command_name](command_data)
+class NetworkManager:
+    def __init__(self):
+        self.pipe_path = "/tmp/wmtb"
+        self.server_socket_name = "network_command"
+        self.port = 65432
 
-def handle_connection(conn, address):
-    try:
-        data = ""
-        while len(data) == 0 or data[-1] != '\0':
-            buf = conn.recv(1024)
-            data += buf.decode('utf-8')
-        data = data[:-1].strip()
-        val = process_command(data.split(" ", 1))
-        conn.send(val.encode('utf-8') + b'\0')
-    except IOError:
-        pass
-    finally:
+        self.config = {"processes":{"echo":"python3 antennas/echo.py",
+                            "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
+                            "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
+
+        os.makedirs(self.pipe_path,exist_ok=True)
+        self.antennas = []
+        self.fifo_files = set()
+
+
         try:
-            conn.close()
+            os.remove(self.server_socket_name)
         except OSError:
             pass
-        
 
-def clean_up():
-    [process.terminate() for process in processes]
-    os.remove(server_socket)
-    [os.remove(file) for file in fifo_files]
+        self.server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.server_socket.bind(self.server_socket_name)
+        self.server_socket.listen()
+
+    def process(self):
+        conn, addr = self.server_socket.accept()
+        self.handle_connection(conn, addr)
+
+    def close(self):
+        [antenna.close() for antenna in self.antennas]
+        self.server_socket.close()
+        os.remove(self.server_socket_name)
+
+    def _create_connection(self, data):
+        antenna = Antenna(data, self.pipe_path)
+        print("started antenna")
+        self.antennas.append(antenna)
+        return " ".join(antenna.get_interfaces())
+
+    def _process_command(self, command_list):
+        commands = {"create": self._create_connection}
+        command_name, command_data = command_list
+        return commands[command_name](command_data)
+
+    def handle_connection(self, conn, address):
+        try:
+            data = ""
+            while len(data) == 0 or data[-1] != '\0':
+                buf = conn.recv(1024)
+                data += buf.decode('utf-8')
+            data = data[:-1].strip()
+            val = self._process_command(data.split(" ", 1))
+            conn.send(val.encode('utf-8') + b'\0')
+        except IOError:
+            pass
+        finally:
+            try:
+                conn.close()
+            except OSError:
+                pass
+
 
 def main():
-    os.makedirs(pipe_path,exist_ok=True)
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-        try:
-            print("Server started")
-            s.bind(server_socket)
-            s.listen()
-            while True:
-                conn, addr = s.accept()
-                handle_connection(conn, addr)
-        finally:
-            s.close()
+    manager = NetworkManager()
+    try:
+        while True:
+            manager.process()
+    finally:
+        manager.close()
 
-try:
-    main()
-finally:
-    clean_up()
+main()
