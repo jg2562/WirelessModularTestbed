@@ -1,6 +1,7 @@
 import os
 import socket
 import subprocess as sp
+import selectors
 
 class Antenna:
     def __init__(self, data, file_path):
@@ -33,8 +34,10 @@ class NetworkManager:
         self._setup(config)
 
     def process(self):
-        conn, addr = self.server_socket.accept()
-        self._handle_connection(conn, addr)
+        events = self.sel.select()
+        for key, mask in events:
+            callback = key.data 
+            callback(key)
 
     def close(self):
         [antenna.close() for antenna in self.antennas]
@@ -46,6 +49,7 @@ class NetworkManager:
 
         os.makedirs(self.config["pipe dir"],exist_ok=True)
         self.antennas = []
+        self.sel = selectors.DefaultSelector()
         self.fifo_files = set()
 
         try:
@@ -56,6 +60,7 @@ class NetworkManager:
         self.server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server_socket.bind(self.config["server socket"])
         self.server_socket.listen()
+        self.sel.register(self.server_socket, selectors.EVENT_READ, self._handle_connection)
 
     def _create_connection(self, data):
         antenna = Antenna(data, self.config["pipe dir"])
@@ -68,7 +73,8 @@ class NetworkManager:
         command_name, command_data = command_list
         return commands[command_name](command_data)
 
-    def _handle_connection(self, conn, address):
+    def _handle_connection(self, key):
+        conn, addr = self.server_socket.accept()
         try:
             data = ""
             while len(data) == 0 or data[-1] != '\0':
