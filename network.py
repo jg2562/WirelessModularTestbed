@@ -26,13 +26,15 @@ class Antenna:
 
 class NetworkManager:
     def __init__(self, config):
+        setup(config)
 
+
+    def setup(self, config):
         self.config = config
 
         os.makedirs(self.config["pipe dir"],exist_ok=True)
         self.antennas = []
         self.fifo_files = set()
-
 
         try:
             os.remove(self.config["server socket"])
