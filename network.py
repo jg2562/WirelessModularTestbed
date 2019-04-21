@@ -50,7 +50,7 @@ class NetworkManager:
 
     def process(self):
         conn, addr = self.server_socket.accept()
-        self.handle_connection(conn, addr)
+        self._handle_connection(conn, addr)
 
     def close(self):
         [antenna.close() for antenna in self.antennas]
@@ -68,7 +68,7 @@ class NetworkManager:
         command_name, command_data = command_list
         return commands[command_name](command_data)
 
-    def handle_connection(self, conn, address):
+    def _handle_connection(self, conn, address):
         try:
             data = ""
             while len(data) == 0 or data[-1] != '\0':
