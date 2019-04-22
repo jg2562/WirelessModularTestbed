@@ -5,8 +5,9 @@ import selectors
 
 class Antenna:
     def __init__(self, data, file_path):
-        self.ant_type, self.modes, *process_args = data.split(" ")
+        self.ant_type, self.modes, *original_process_args = data.split(" ")
         self.interfaces = {mode:self._create_fifo(self._create_filename(file_path, mode)) for mode in self.modes}
+        process_args = [self.interfaces[mode] for mode in self.modes] + original_process_args
         
         self.process = sp.Popen(process_args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
