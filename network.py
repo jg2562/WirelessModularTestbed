@@ -8,7 +8,7 @@ class Antenna:
         self.ant_type, self.modes, *process_args = data.split(" ")
         self.interfaces = {mode:self._create_fifo(self._create_filename(file_path, mode)) for mode in self.modes}
         
-        self.process = sp.Popen(" ".join(process_args), shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
+        self.process = sp.Popen(process_args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
     def name(self):
         return self.ant_type
