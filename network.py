@@ -47,7 +47,6 @@ class NetworkManager:
     def process(self):
         events = self.sel.select()
         for key, mask in events:
-            print(key.data)
             callback = key.data[0]
             callback(key)
 
@@ -77,7 +76,7 @@ class NetworkManager:
 
     def _create_connection(self, data):
         antenna = Antenna(data, self.config["pipe dir"])
-        print("started antenna")
+        print("Antenna started")
         self.antennas.append(antenna)
         self.antenna_dict[antenna.name()] = antenna
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
