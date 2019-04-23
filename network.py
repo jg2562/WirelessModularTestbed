@@ -96,7 +96,10 @@ class NetworkManager:
     def _process_command(self, command_list):
         commands = {"create": self._create_connection}
         command_name, command_data = command_list
-        return commands[command_name](command_data)
+        try:
+            return commands[command_name](command_data)
+        except KeyError:
+            return ""
 
     def _close_antenna(self, antenna):
         self.sel.unregister(antenna.get_stderr())
