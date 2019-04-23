@@ -3,17 +3,46 @@ import socket
 import subprocess as sp
 import selectors
 
+class Interface:
+    def __init__(self, filename, mode):
+        self.filename = filename
+        self.mode = mode
+        self.created = False
+        self.opened = False
+        self._create()
+
+    def _create(self):
+        if not os.path.exists(self.filename):
+            os.mkfifo(self.filename)
+            self.created = True
+        return self.filename
+
+    def get_mode(self):
+        return self.mode
+
+    def get_file(self):
+        return self.filename
+
+    def open(self):
+        os.open(self.filename)
+        self.opened = True
+
+    def close(self):
+        if self.opened:
+            os.close(self.filename)
+
+        if self.created:
+            os.remove(self.filename)
+
 class Antenna:
     def __init__(self, data, file_path, interfaces={}):
 
         self.ant_type, self.modes, *original_process_args = data.split(" ")
 
-        generate_interfaces = self.modes
-        [generate_interfaces.replace(mode, '') for mode in interfaces.keys()]
+        self.interfaces = {mode:self._create_interface(self._create_filename(file_path, mode)
+                                                       if mode not in interfaces else interfaces[mode], mode) for mode in self.modes}
 
-        self.gened_interfaces = {mode:self._create_fifo(self._create_filename(file_path, mode)) for mode in generate_interfaces}
-        self.interfaces.update(interfaces)
-        process_args = [self.interfaces[mode] for mode in self.modes] + original_process_args
+        process_args = [self.interfaces[mode].get_file() for mode in self.modes] + original_process_args
         
         self.process = sp.Popen(process_args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
@@ -28,7 +57,7 @@ class Antenna:
 
     def close(self):
         self.process.terminate()
-        [os.remove(self.gened_interfaces[mode]) for mode in self.gened_interfaces]
+        [self.interfaces[mode].close() for mode in self.interfaces]
 
     def get_stderr(self):
         return self.process.stderr
@@ -36,11 +65,8 @@ class Antenna:
     def _create_filename(self, file_path, mode):
         return os.path.join(file_path, self.ant_type + "_" + mode)
 
-    def _create_fifo(self, file):
-        if not os.path.exists(file):
-            os.mkfifo(file)
-        return file
-
+    def _create_interface(self, file, mode):
+        return Interface(file, mode)
 
 class NetworkManager:
     def __init__(self, config):
@@ -106,7 +132,6 @@ class NetworkManager:
         antenna.close()
         self.antennas.remove(antenna)
         del self.antenna_dict[antenna.name()]
-
 
     def _antenna_error(self, key):
         print("Antenna failed")
