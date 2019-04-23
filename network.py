@@ -99,8 +99,8 @@ class NetworkManager:
         self.antenna_dict = {}
         self.sel = selectors.DefaultSelector()
         self.fifo_files = set()
-        self.in_interface = Interface(os.path.join(self.file_path, "network_manager_r"))
-        self.out_interface = Interface(os.path.join(self.file_path, "network_manager_w"))
+        self.in_interface = Interface(os.path.join(self.config["pipe dir"], "network_manager_r"), "r")
+        self.out_interface = Interface(os.path.join(self.config["pipe dir"], "network_manager_w"), "w")
 
         try:
             os.remove(self.config["server socket"])
@@ -144,26 +144,17 @@ class NetworkManager:
         print(os.read(key.fd,1024).decode('utf-8'))
         self._close_antenna(key.data[1])
 
-    def _read_command(self, key):
+    def _handle_file(self, key):
         try:
             data = ""
             while len(data) == 0 or data[-1] != '\0':
-                buf = self.in_interface.get_(1024)
+                buf = os.read(self.in_interface.get_fh(),1024)
                 data += buf.decode('utf-8')
             data = data[:-1].strip()
             val = self._process_command(data.split(" ", 1))
-            conn.send(val.encode('utf-8') + b'\0')
+            os.write(self.out_interface.get_fh(),val.encode('utf-8') + b'\0')
         except IOError:
             pass
-        finally:
-            try:
-                conn.close()
-            except OSError:
-                pass
-
-    def _handle_read(self, key):
-        os.read(key.fh
-        return blarg
 
     def _handle_connection(self, key):
         conn, addr = self.server_socket.accept()
