@@ -4,9 +4,15 @@ import subprocess as sp
 import selectors
 
 class Antenna:
-    def __init__(self, data, file_path):
+    def __init__(self, data, file_path, interfaces={}):
+
         self.ant_type, self.modes, *original_process_args = data.split(" ")
-        self.interfaces = {mode:self._create_fifo(self._create_filename(file_path, mode)) for mode in self.modes}
+
+        generate_interfaces = self.modes
+        [generate_interfaces.replace(mode, '') for mode in interfaces.keys()]
+
+        self.gened_interfaces = {mode:self._create_fifo(self._create_filename(file_path, mode)) for mode in generate_interfaces}
+        self.interfaces.update(interfaces)
         process_args = [self.interfaces[mode] for mode in self.modes] + original_process_args
         
         self.process = sp.Popen(process_args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
@@ -22,7 +28,7 @@ class Antenna:
 
     def close(self):
         self.process.terminate()
-        [os.remove(self.interfaces[mode]) for mode in self.interfaces]
+        [os.remove(self.gened_interfaces[mode]) for mode in self.gened_interfaces]
 
     def get_stderr(self):
         return self.process.stderr
