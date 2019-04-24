@@ -14,12 +14,10 @@ class Window(QtGui.QMainWindow):
         btn.clicked.connect(self.send_application)
         btn.resize(btn.minimumSizeHint())
         btn.move(400,250)
-        self.show()
         btn = QtGui.QPushButton("Quit", self)
         btn.clicked.connect(self.close_application)
         btn.resize(btn.minimumSizeHint())
         btn.move(450,250)
-        self.show()
 
         openFile = QtGui.QAction("&Open File", self)
         openFile.setShortcut("Ctrl+O")
@@ -34,6 +32,7 @@ class Window(QtGui.QMainWindow):
         comboBox.addItem("Zigbee")
         comboBox.addItem("LoRa")
         comboBox.move(50, 150)
+        self.show()
 
 
     def close_application(self):
