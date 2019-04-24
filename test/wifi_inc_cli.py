@@ -44,5 +44,4 @@ def main():
         os.close(out_fh);
 
 if __name__ == "__main__":
-    wifi_add =  input("Host IP: ")
     main()
