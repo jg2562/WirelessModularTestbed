@@ -29,10 +29,17 @@ def main():
         while True:
             try:
                 buff = os.read(in_fh, 1024)
+                start = time.time()
                 if buff:
                     num = int(buff.decode('utf-8'))
-                    print(num)
+                    #print(num)
                     os.write(out_fh,str(num + 1).encode('utf-8'))
+                    
+                    if (num%1000 == 0):
+                        end = time.time()
+                        dt = end-start
+                        print(1000/dt, 'Mb/s')
+                        start = time.time()
             except BlockingIOError as E:
                 if E.errno != 11:
                     raise E
