@@ -154,6 +154,10 @@ class NetworkManager:
         antenna = self.antenna_dict[antenna.name()] 
         antenna.call(data[1:])
 
+    def _run_shell_command(self, data):
+        out = sp.run(data, shell=True)
+        return str(out.returncode).encode('utf-8')
+
     def _upload_file(self, filename):
         hasher = self.hash_algo()
         buf = b''
@@ -202,8 +206,9 @@ class NetworkManager:
     def _process_command(self, command_list):
         commands = {"create": self._create_connection,
                     "create_attach": self._create_attach_connection,
-                    "upload": self._upload_file
-                    "download": self._download_file}
+                    "upload": self._upload_file,
+                    "download": self._download_file,
+                    "run": self._run_shell_command}
         command_name, command_data = command_list
         try:
             return commands[command_name](command_data)
