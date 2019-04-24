@@ -30,12 +30,11 @@ def main():
         while True:
             try:
                 buff = os.read(in_fh, 1024)
+                print(buff)
                 if buff:
                     num = int(buff.decode('utf-8'))
                     print(num)
                     os.write(out_fh,str(num + 1).encode('utf-8'))
-                else:
-                    print('waiting')
             except BlockingIOError as E:
                 if E.errno != 11:
                     raise E

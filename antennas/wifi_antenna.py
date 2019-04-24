@@ -30,19 +30,18 @@ def main():
     def start_wifi(sock,args):
         
         def server(address, port):
-            print('Wifi - Server Started')
             sock.bind((address, port))
             sock.listen(1)
             
-            wifi_sock, addr=sock.accept()
+            wifi_sock, address=sock.accept()
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             return wifi_sock
             #msg = input('>')
             #conn.send(msg.encode('utf-8'))
 
         def client(address, port):
-            print('Wifi - Client started')
-            sock.connect((address, port))
+            if (socket.gethostname() != 'raspberrypiA'):
+                sock.connect((address, port))
             return sock
             #data = s.recv(1024)
             #print(data.decode('utf-8'))
@@ -55,18 +54,16 @@ def main():
     wifi_sock = start_wifi(sock,args)
 
     def receive_wifi():
-        print('Waiting to receive...')
-        buff = wifi_sock.recv(1024)
-        if buff:
-            os.write(fh_out,buff)
+        if (socket.gethostname() != 'raspberrypiA'):
+            buff = sock.recv(1024)
+            if buff:
+                os.write(fh_out,buff)
 
     def send_wifi():
-        print('Waiting to send...')
         buff = os.read(fh_in, 1024)
         if buff:
             wifi_sock.send(buff)
     
-    print('Eck')
     sel.register(wifi_sock, selectors.EVENT_READ, receive_wifi)
     sel.register(fh_in, selectors.EVENT_READ, send_wifi)
 
