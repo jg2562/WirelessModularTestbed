@@ -4,7 +4,7 @@ import time
 
 server_address = "network_command"
 port = 65432
-wifi_port = 0x1003
+wifi_port = 0x1001
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
