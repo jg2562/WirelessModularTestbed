@@ -14,11 +14,11 @@ parser.add_argument('--address', required=False)
 
 args = parser.parse_args()
 mode = args.mode
-hostname = socket.gethostname()    
-HOST = socket.gethostbyname(hostname)  
-PORT = args.port
 
 #setup
+if not mode == "rw":
+    print("Bad mode for bluetooth")
+    exit(1)
 sel = selectors.DefaultSelector()
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,8 +28,8 @@ fh_out = os.open(args.in_filename, os.O_WRONLY)
 fh_in = os.open(args.out_filename, os.O_RDONLY)
 
 def start_wifi(sock,args):
-    def server():
-        sock.bind((HOST, PORT))
+    def server(port):
+        sock.bind((address, port))
         sock.listen(1)
         conn, addr=sock.accept()
         return wifi_sock
@@ -39,8 +39,8 @@ def start_wifi(sock,args):
         return sock
     
     #client code
-    def client():
-        sock.connect((coHOST, PORT))
+    def client(address, port):
+        sock.connect((address, port))
         #data = s.recv(1024)
         #print(data.decode('utf-8'))
         
@@ -61,7 +61,7 @@ def send_wifi():
     if buff:
         bt_sock.send(buff)
 
-sel.register(bt_sock, selectors.EVENT_READ, receive_wifi)
+sel.register(wifi_sock, selectors.EVENT_READ, receive_wifi)
 sel.register(fh_in, selectors.EVENT_READ, send_wifi)
 
 print("Waiting for comms")
@@ -75,5 +75,5 @@ finally:
     sel.close()
     os.close(fh_in)
     os.close(fh_out)
-    bt_sock.close()
+    wifi_sock.close()
 

@@ -2,9 +2,10 @@ import socket
 import os
 import time
 
-server_address = input("Host IP: ")
+server_address = "network_command"
 port = 65432
-bt_port = 0x1001
+wifi_add = input("Host IP: ")
+wifi_port = 0x1001
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
@@ -19,13 +20,15 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create wifi_server rw --port " + str(wifi_port))
+        data = send_command("create wifi_client rw --address {} --port {}".format(wifi_add,wifi_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 
         in_fh = os.open(in_file, os.O_RDONLY)
         out_fh = os.open(out_file, os.O_WRONLY)
+        time.sleep(5)
         print("Starting communication")
+        os.write(out_fh, b'1')
         while True:
             try:
                 buff = os.read(in_fh, 1024)
