@@ -26,19 +26,23 @@ def main():
         in_fh = os.open(in_file, os.O_RDONLY)
         out_fh = os.open(out_file, os.O_WRONLY)
         print("Starting communication")
+        count = 0
+
         while True:
             try:
                 buff = os.read(in_fh, 1024)
                 start = time.time()
+                count += 1
                 if buff:
                     num = int(buff.decode('utf-8'))
                     #print(num)
                     os.write(out_fh,str(num + 1).encode('utf-8'))
                     
-                    if (num%1000 == 0):
+                    if (count == 100):
                         end = time.time()
                         dt = end-start
-                        print(1000/dt, 'Mb/s')
+                        count = 0
+                        print(100/dt, 'Mb/s')
                         start = time.time()
             except BlockingIOError as E:
                 if E.errno != 11:

@@ -29,23 +29,29 @@ def main():
 
     def start_wifi(sock,args):
         def server(address, port):
-            sock.bind((address, port))
-            print('waiting...')
-            sock.listen(1)
-            print('served')
-            conn, addr=sock.accept()
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            return wifi_sock
-
+            try:
+                print('Wifi - Server Started')
+                sock.bind((address, port))
+                sock.listen(1)
+                print('served')
+                conn, addr=sock.accept()
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                return wifi_sock
+            except:
+                print('Wifi - Server Failed')
             #msg = input('>')
             #conn.send(msg.encode('utf-8'))
 
         #client code
         def client(address, port):
-            sock.connect((address, port))
-            print('cliented')
+            try:
+                print('Wifi - Client started')
+                sock.connect((address, port))
+                print('cliented')
 
-            return sock
+                return sock
+            except:
+                print('Wifi - Client Failed')
             #data = s.recv(1024)
             #print(data.decode('utf-8'))
 
@@ -64,7 +70,7 @@ def main():
     def send_wifi():
         buff = os.read(fh_in, 1024)
         if buff:
-            bt_sock.send(buff)
+            wifi_sock.send(buff)
 
     sel.register(wifi_sock, selectors.EVENT_READ, receive_wifi)
     sel.register(fh_in, selectors.EVENT_READ, send_wifi)
