@@ -108,6 +108,9 @@ class NetworkManager:
         self.antenna_dict = {}
         self.sel = selectors.DefaultSelector()
         self.fifo_files = set()
+
+        self._run_config_precommands()
+
         self.in_interface = Interface(os.path.join(self.config["pipe dir"], "network_manager_r"), "r")
         self.out_interface = Interface(os.path.join(self.config["pipe dir"], "network_manager_w"), "w")
         self.in_interface.open()
@@ -123,6 +126,12 @@ class NetworkManager:
         self.server_socket.listen()
         self.sel.register(self.server_socket, selectors.EVENT_READ, data=(self._handle_connection, None))
         self.sel.register(self.in_interface.get_fh(), selectors.EVENT_READ, data=(self._handle_file, None))
+
+    def _run_config_precommands(self):
+        if "commands" in self.config:
+            cmds = self.config["commands"]
+            for cmd in cmds:
+                self._process_command(cmd.split(" ", 1))
 
     def _create_connection(self, data):
         ant_type, modes, *original_process_args = data.split(" ")
