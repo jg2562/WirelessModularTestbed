@@ -149,14 +149,12 @@ class NetworkManager:
         antenna = self.antenna_dict[antenna.name()] 
         antenna.call(data[1:])
 
-    def _upload_file(self, sock):
+    def _upload_file(self, filename):
         hasher = self.hash_algo()
         buf = b''
         with open(filename, "rb") as fh:
-            buf = afile.read()
+            buf = fh.read()
             hasher.update(buf)
-
-        sock.write(hasher.digest())
 
         return hasher.digest() + buf
 
