@@ -4,6 +4,8 @@
 	"processes": {
 		"echo":"python3 antennas/echo.py",
 		"bluetooth_client":"python3 antennas/bluetooth_antenna.py",
-		"bluetooth_server":"python3 antennas/bluetooth_antenna.py"
+		"bluetooth_server":"python3 antennas/bluetooth_antenna.py",
+		"wifi_client":"python3 antennas/wifi_antenna.py",
+		"wifi_server":"python3 antennas/wifi_antenna.py"
 	}
 }
