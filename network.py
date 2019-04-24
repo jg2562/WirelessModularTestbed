@@ -123,7 +123,7 @@ class NetworkManager:
         self.antennas.append(antenna)
         self.antenna_dict[antenna.name()] = antenna
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
-        return " ".join([interface.get_file() for interface in antenna.get_interfaces()])
+        return " ".join([interface.get_file() for interface in antenna.get_interfaces()]).encode('utf-8')
 
     def _create_attach_connection(self, data):
         ant_type, modes, *original_process_args = data.split(" ")
@@ -138,22 +138,34 @@ class NetworkManager:
         self.antennas.append(antenna)
         self.antenna_dict[antenna.name()] = antenna
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
-        return " ".join([interface.get_file() for interface in antenna.get_interfaces()])
+        return " ".join([interface.get_file() for interface in antenna.get_interfaces()]).encode('utf-8')
 
     def _call_antenna(self, data):
         antenna_name = data[0]
         antenna = self.antenna_dict[antenna.name()] 
         antenna.call(data[1:])
 
+    def _upload_file(self, sock):
+        hasher = self.hash_algo()
+        buf = b''
+        with open(filename, "rb") as fh:
+            buf = afile.read()
+            hasher.update(buf)
+
+        sock.write(hasher.digest())
+
+        return hasher.digest() + buf
+
     def _process_command(self, command_list):
         commands = {"create": self._create_connection,
-                    "create_attach": self._create_attach_connection}
+                    "create_attach": self._create_attach_connection,
+                    "upload": self._upload_file}
         command_name, command_data = command_list
         try:
             return commands[command_name](command_data)
         except KeyError:
             print("Invalid command: " + str(command_name))
-            return ""
+            return "".encode('utf-8')
 
     def _close_antenna(self, antenna):
         self.sel.unregister(antenna.get_stderr())
@@ -174,7 +186,7 @@ class NetworkManager:
                 data += buf.decode('utf-8')
             data = data[:-1].strip()
             val = self._process_command(data.split(" ", 1))
-            os.write(self.out_interface.get_fh(),val.encode('utf-8') + b'\0')
+            os.write(self.out_interface.get_fh(),val + b'\0')
         except IOError:
             pass
 
@@ -194,7 +206,7 @@ class NetworkManager:
             val = self._process_command(data.split(" ", 1))
 
             try:
-                conn.send(val.encode('utf-8') + b'\0')
+                conn.send(val + b'\0')
             except IOError as e:
                 print("Send connection IO ERROR: " + str(e))
         finally:
