@@ -15,7 +15,7 @@ def main():
 
     args = parser.parse_args()
     mode = args.mode
-
+    
     #setup
     if not mode == "rw":
         print("Bad mode for wifi")
@@ -25,32 +25,25 @@ def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     fh_out = os.open(args.in_filename, os.O_WRONLY)
     fh_in = os.open(args.out_filename, os.O_RDONLY)
-
+    print('Socket intialized.')
+    
     def start_wifi(sock,args):
+        
         def server(address, port):
-            try:
-                print('Wifi - Server Started')
-                sock.bind((address, port))
-                sock.listen(1)
-                print('served')
-                wifi_sock, addr=sock.accept()
-                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                return wifi_sock
-            except:
-                print('Wifi - Server Failed')
+            print('Wifi - Server Started')
+            sock.bind((address, port))
+            sock.listen(1)
+            
+            wifi_sock, addr=sock.accept()
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            return wifi_sock
             #msg = input('>')
             #conn.send(msg.encode('utf-8'))
 
-        #client code
         def client(address, port):
-            try:
-                print('Wifi - Client started')
-                sock.connect((address, port))
-                print('cliented')
-
-                return sock
-            except:
-                print('Wifi - Client Failed')
+            print('Wifi - Client started')
+            sock.connect((address, port))
+            return sock
             #data = s.recv(1024)
             #print(data.decode('utf-8'))
 
@@ -62,15 +55,18 @@ def main():
     wifi_sock = start_wifi(sock,args)
 
     def receive_wifi():
+        print('Waiting to receive...')
         buff = wifi_sock.recv(1024)
         if buff:
             os.write(fh_out,buff)
 
     def send_wifi():
+        print('Waiting to send...')
         buff = os.read(fh_in, 1024)
         if buff:
             wifi_sock.send(buff)
-
+    
+    print('Eck')
     sel.register(wifi_sock, selectors.EVENT_READ, receive_wifi)
     sel.register(fh_in, selectors.EVENT_READ, send_wifi)
 

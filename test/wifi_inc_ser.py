@@ -34,6 +34,8 @@ def main():
                     num = int(buff.decode('utf-8'))
                     print(num)
                     os.write(out_fh,str(num + 1).encode('utf-8'))
+                else:
+                    print('waiting')
             except BlockingIOError as E:
                 if E.errno != 11:
                     raise E
