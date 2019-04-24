@@ -30,7 +30,7 @@ class Interface:
         return self.fh
 
     def open(self):
-        self.fh = os.open(self.filename)
+        self.fh = os.open(self.filename, (os.O_RDONLY if "r" else os.O_WRONLY) | os.O_NONBLOCK)
         self.opened = True
 
     def close(self):
@@ -95,6 +95,8 @@ class NetworkManager:
 
     def close(self):
         [antenna.close() for antenna in self.antennas]
+        self.in_interface.close()
+        self.out_interface.close()
         self.server_socket.close()
         os.remove(self.config["server socket"])
 
@@ -108,6 +110,8 @@ class NetworkManager:
         self.fifo_files = set()
         self.in_interface = Interface(os.path.join(self.config["pipe dir"], "network_manager_r"), "r")
         self.out_interface = Interface(os.path.join(self.config["pipe dir"], "network_manager_w"), "w")
+        self.in_interface.open()
+        self.out_interface.open()
 
         try:
             os.remove(self.config["server socket"])
