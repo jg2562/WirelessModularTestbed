@@ -39,7 +39,7 @@ class Interface:
             os.remove(self.filename)
 
 class Antenna:
-    def __init__(self, ant_type, modes, original_process_args, file_path, interfaces={}):
+    def __init__(self, process, ant_type, modes, original_process_args, file_path, interfaces={}):
 
         self.ant_type = ant_type
         self.modes = modes
@@ -49,7 +49,10 @@ class Antenna:
 
         process_args = [self.interfaces[mode].get_file() for mode in self.modes] + original_process_args
         
-        self.process = sp.Popen(process_args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
+
+        cmd = " ".join([process, modes] + process_args)
+        print(cmd)
+        self.process = sp.Popen(cmd, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
     def name(self):
         return self.ant_type
@@ -116,7 +119,7 @@ class NetworkManager:
     def _create_connection(self, data):
         ant_type, modes, *original_process_args = data.split(" ")
 
-        antenna = Antenna(ant_type, modes, original_process_args, self.config["pipe dir"])
+        antenna = Antenna(self.config["processes"][ant_type], ant_type, modes, original_process_args, self.config["pipe dir"])
         print("Antenna started")
         self.antennas.append(antenna)
         self.antenna_dict[antenna.name()] = antenna
