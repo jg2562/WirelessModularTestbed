@@ -122,6 +122,7 @@ class NetworkManager:
         self.server_socket.bind(self.config["server socket"])
         self.server_socket.listen()
         self.sel.register(self.server_socket, selectors.EVENT_READ, data=(self._handle_connection, None))
+        self.sel.register(self.in_interface.get_fh(), selectors.EVENT_READ, data=(self._handle_file, None))
 
     def _create_connection(self, data):
         ant_type, modes, *original_process_args = data.split(" ")
@@ -161,6 +162,42 @@ class NetworkManager:
             hasher.update(buf)
 
         return hasher.digest() + buf
+
+    def _download_file(self, data):
+        out_file, download_file = data.split(" ")
+        self.sel.unregister(self.in_interface.out)
+
+        def __download():
+            hasher = self.hash_algo()
+            os.write(self.out_interface.get_fh(), ("upload " + download_file).encode('utf-8'))
+
+            buf = os.read(self.in_interface.get_fh(), hasher.digest_size)
+            hash = buf
+
+            buf = os.read(self.in_interface.get_fh(), 1024)
+            out_buf = buf
+            while len(buf) > 0:
+                out_fh.write(buf)
+                buf = os.read(self.in_interface.get_fh(), 1024)
+                out_buf += buf
+            return hash_down, buf
+        
+        hash_down, buf = __download()
+        hasher = self.hash_algo()
+        hasher.update(buf)
+
+        while hash_down != hasher.digest():
+            hash_down, buf = __download()
+
+            hasher = self.hash_algo()
+            hasher.update(buf)
+            pass
+
+        out_fh = open(out_file, "wb")
+        out_fh.write(buf)
+        out_fh.close()
+
+        self.sel.register(self.in_interface.get_fh(), selectors.EVENT_READ, data=(self._handle_file, None))
 
     def _process_command(self, command_list):
         commands = {"create": self._create_connection,
