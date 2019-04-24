@@ -2,6 +2,7 @@ import os
 import socket
 import subprocess as sp
 import selectors
+import json
 
 class Interface:
     def __init__(self, filename, mode):
@@ -216,12 +217,9 @@ class NetworkManager:
                 pass
 
 def main():
-    config = {"server socket": "network_command",
-              "pipe dir": "/tmp/wmtb",
-              "processes":{"echo":"python3 antennas/echo.py",
-                           "bluetooth_client":"python3 antennas/bluetooth_antenna.py",
-                           "bluetooth_server":"python3 antennas/bluetooth_antenna.py"}}
-
+    config = {}
+    with open("default_config.json") as fh:
+        config = json.load(fh)
     manager = NetworkManager(config)
     try:
         while True:
