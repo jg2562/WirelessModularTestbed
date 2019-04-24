@@ -39,9 +39,10 @@ class Interface:
             os.remove(self.filename)
 
 class Antenna:
-    def __init__(self, data, file_path, interfaces={}):
+    def __init__(self, ant_type, modes, original_process_args, file_path, interfaces={}):
 
-        self.ant_type, self.modes, *original_process_args = data.split(" ")
+        self.ant_type = ant_type
+        self.modes = modes
 
         self.interfaces = {mode:self._create_interface(self._create_filename(file_path, mode)
                                                        if mode not in interfaces else interfaces[mode], mode) for mode in self.modes}
@@ -113,12 +114,15 @@ class NetworkManager:
         self.sel.register(self.server_socket, selectors.EVENT_READ, data=(self._handle_connection, None))
 
     def _create_connection(self, data):
-        antenna = Antenna(data, self.config["pipe dir"])
+        ant_type, modes, *original_process_args = data.split(" ")
+
+        antenna = Antenna(ant_type, modes, original_process_args, self.config["pipe dir"])
         print("Antenna started")
         self.antennas.append(antenna)
         self.antenna_dict[antenna.name()] = antenna
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
         return " ".join(antenna.get_interfaces())
+
 
     def _call_antenna(self, data):
         antenna_name = data[0]
@@ -127,6 +131,7 @@ class NetworkManager:
 
     def _process_command(self, command_list):
         commands = {"create": self._create_connection}
+
         command_name, command_data = command_list
         try:
             return commands[command_name](command_data)
