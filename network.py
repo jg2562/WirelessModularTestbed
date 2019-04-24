@@ -180,12 +180,12 @@ class NetworkManager:
         out_file, download_file = data.split(" ")
         self.sel.unregister(self.in_interface.out)
 
+        hasher = self.hash_algo()
         def __download():
-            hasher = self.hash_algo()
             os.write(self.out_interface.get_fh(), ("upload " + download_file).encode('utf-8'))
 
             buf = os.read(self.in_interface.get_fh(), hasher.digest_size)
-            hash = buf
+            hash_down = buf
 
             buf = os.read(self.in_interface.get_fh(), 1024)
             out_buf = buf
@@ -196,7 +196,6 @@ class NetworkManager:
             return hash_down, buf
         
         hash_down, buf = __download()
-        hasher = self.hash_algo()
         hasher.update(buf)
 
         while hash_down != hasher.digest():
