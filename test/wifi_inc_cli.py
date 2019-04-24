@@ -2,10 +2,10 @@ import socket
 import os
 import time
 
-server_address = input("Host IP: ")
+server_address = "network_command"
 port = 65432
-bt_add = "B8:27:EB:4B:65:06"
-bt_port = 0x1001
+wifi_add = input("Host IP: ")
+wifi_port = 0x1001
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:

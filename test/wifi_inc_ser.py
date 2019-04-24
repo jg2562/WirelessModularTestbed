@@ -2,9 +2,9 @@ import socket
 import os
 import time
 
-server_address = '127.0.0.1'
+server_address = "network_command"
 port = 65432
-bt_port = 0x1001
+wifi_port = 0x1003
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
@@ -19,7 +19,7 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create bluetooth_server rw --port " + str(wifi_port))
+        data = send_command("create wifi_server rw --port " + str(wifi_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 
