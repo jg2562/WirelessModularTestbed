@@ -202,7 +202,8 @@ class NetworkManager:
     def _process_command(self, command_list):
         commands = {"create": self._create_connection,
                     "create_attach": self._create_attach_connection,
-                    "upload": self._upload_file}
+                    "upload": self._upload_file
+                    "download": self._download_file}
         command_name, command_data = command_list
         try:
             return commands[command_name](command_data)
