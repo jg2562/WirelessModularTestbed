@@ -51,7 +51,6 @@ class Antenna:
         
 
         cmd = " ".join([process, modes] + process_args)
-        print(cmd)
         self.process = sp.Popen(cmd, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
     def name(self):
