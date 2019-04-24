@@ -4,6 +4,7 @@ import time
 
 server_address = "network_command"
 port = 65432
+wifi_add = input("Enter IP: ")
 wifi_port = 0x1001
 
 def send_command(command):
@@ -19,7 +20,7 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create wifi_server rw --port " + str(wifi_port))
+        data = send_command("create wifi_server rw --address {} --port {}".format(wifi_add,wifi_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 

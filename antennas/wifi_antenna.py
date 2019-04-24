@@ -11,14 +11,14 @@ def main():
     parser.add_argument('in_filename')
     parser.add_argument('out_filename')
     parser.add_argument('--port', type=int)
-    parser.add_argument('--address', required=False)
+    parser.add_argument('--address', required=True)
 
     args = parser.parse_args()
     mode = args.mode
 
     #setup
     if not mode == "rw":
-        print("Bad mode for bluetooth")
+        print("Bad mode for wifi")
         exit(1)
     sel = selectors.DefaultSelector()
 
@@ -37,11 +37,11 @@ def main():
 
             #msg = input('>')
             #conn.send(msg.encode('utf-8'))
-            return sock
 
         #client code
         def client(address, port):
             sock.connect((address, port))
+            return sock
             #data = s.recv(1024)
             #print(data.decode('utf-8'))
 
