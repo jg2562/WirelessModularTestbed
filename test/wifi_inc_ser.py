@@ -5,7 +5,7 @@ import time
 server_address = "network_command"
 port = 65432
 wifi_add = input("Enter IP: ")
-wifi_port = 1001
+wifi_port = 3001
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
@@ -13,8 +13,8 @@ def send_command(command):
         sock.send(command.encode('utf-8') + b'\0')
         data = ""
         while len(data) == 0 or data[-1] != '\0':
-            buf = sock.recv(1024)
-            data += buf.decode('utf-8')
+            buff = sock.recv(1024)
+            data += buff.decode('utf-8')
         return data[:-1].strip()
 
 def main():
@@ -30,7 +30,6 @@ def main():
         while True:
             try:
                 buff = os.read(in_fh, 1024)
-                print(buff)
                 if buff:
                     num = int(buff.decode('utf-8'))
                     print(num)

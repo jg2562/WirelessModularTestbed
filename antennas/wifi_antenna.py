@@ -31,33 +31,31 @@ def main():
         
         def server(address, port):
             sock.bind((address, port))
-            sock.listen(1)
+            sock.listen(2)
             
-            wifi_sock, address=sock.accept()
+            wifi_sock, addr=sock.accept()
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             return wifi_sock
             #msg = input('>')
             #conn.send(msg.encode('utf-8'))
 
         def client(address, port):
-            if (socket.gethostname() != 'raspberrypiA'):
-                sock.connect((address, port))
+            sock.connect((address, port))
             return sock
             #data = s.recv(1024)
             #print(data.decode('utf-8'))
 
-        if args.address is None:
-            return server(args.port)
+        if (socket.gethostname() == 'raspberrypiA'):
+            return server(args.address, args.port)
         else:
             return client(args.address, args.port)
 
     wifi_sock = start_wifi(sock,args)
 
     def receive_wifi():
-        if (socket.gethostname() != 'raspberrypiA'):
-            buff = sock.recv(1024)
-            if buff:
-                os.write(fh_out,buff)
+        buff = wifi_sock.recv(1024)
+        if buff:
+            os.write(fh_out,buff)
 
     def send_wifi():
         buff = os.read(fh_in, 1024)
