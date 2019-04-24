@@ -125,6 +125,20 @@ class NetworkManager:
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
         return " ".join([interface.get_file() for interface in antenna.get_interfaces()])
 
+    def _create_attach_connection(self, data):
+        ant_type, modes, *original_process_args = data.split(" ")
+        additional_interfaces = original_process_args[:len(modes)]
+        original_process_args = original_process_args[len(modes):]
+        interfaces = {mode: additional_interfaces[i] for i, mode in enumerate(modes)}
+
+        antenna = Antenna(self.config["processes"][ant_type], ant_type, modes,
+                          original_process_args, self.config["pipe dir"], interfaces=interfaces)
+
+        print("Antenna started")
+        self.antennas.append(antenna)
+        self.antenna_dict[antenna.name()] = antenna
+        self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
+        return " ".join([interface.get_file() for interface in antenna.get_interfaces()])
 
     def _call_antenna(self, data):
         antenna_name = data[0]
@@ -132,8 +146,8 @@ class NetworkManager:
         antenna.call(data[1:])
 
     def _process_command(self, command_list):
-        commands = {"create": self._create_connection}
-
+        commands = {"create": self._create_connection,
+                    "create_attach": self._create_attach_connection}
         command_name, command_data = command_list
         try:
             return commands[command_name](command_data)
