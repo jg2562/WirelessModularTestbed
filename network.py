@@ -138,6 +138,7 @@ class NetworkManager:
         try:
             return commands[command_name](command_data)
         except KeyError:
+            print("Invalid command: " + str(command_name))
             return ""
 
     def _close_antenna(self, antenna):
