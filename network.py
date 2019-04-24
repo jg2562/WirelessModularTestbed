@@ -124,7 +124,7 @@ class NetworkManager:
         self.antennas.append(antenna)
         self.antenna_dict[antenna.name()] = antenna
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
-        return " ".join(antenna.get_interfaces())
+        return " ".join([interface.get_file() for interface in antenna.get_interfaces()])
 
 
     def _call_antenna(self, data):
