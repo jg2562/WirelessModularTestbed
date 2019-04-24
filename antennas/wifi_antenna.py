@@ -14,7 +14,8 @@ parser.add_argument('--address', required=False)
 
 args = parser.parse_args()
 mode = args.mode
-HOST = '134.114.73.76' #eck
+hostname = socket.gethostname()    
+HOST = socket.gethostbyname(hostname)  
 PORT = args.port
 
 #setup
