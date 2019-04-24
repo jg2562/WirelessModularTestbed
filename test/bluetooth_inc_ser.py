@@ -38,11 +38,12 @@ def main():
                     #print(num)
                     os.write(out_fh,str(num + 1).encode('utf-8'))
                     
-                    if (count == 100):
+                    if (count == 500):
                         end = time.time()
                         dt = end-start
                         count = 0
-                        print(100/dt, 'Mb/s')
+                        rate = 0.001/dt
+                        print('%.2f Mb/s' %rate)
                         start = time.time()
             except BlockingIOError as E:
                 if E.errno != 11:

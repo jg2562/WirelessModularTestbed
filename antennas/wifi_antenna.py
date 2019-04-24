@@ -23,7 +23,6 @@ def main():
     sel = selectors.DefaultSelector()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     fh_out = os.open(args.in_filename, os.O_WRONLY)
     fh_in = os.open(args.out_filename, os.O_RDONLY)
 
@@ -34,7 +33,7 @@ def main():
                 sock.bind((address, port))
                 sock.listen(1)
                 print('served')
-                conn, addr=sock.accept()
+                wifi_sock, addr=sock.accept()
                 sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 return wifi_sock
             except:
