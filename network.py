@@ -3,6 +3,7 @@ import socket
 import subprocess as sp
 import selectors
 import json
+import hashlib
 
 class Interface:
     def __init__(self, filename, mode):
@@ -79,7 +80,9 @@ class Antenna:
 class NetworkManager:
     def __init__(self, config):
         self._setup(config)
-        
+        self.hash_algo = hashlib.sha256
+        self.block_size = 65536
+
     def reset(self, config):
         self.close()
         self._setup(config)
