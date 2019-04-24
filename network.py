@@ -164,15 +164,22 @@ class NetworkManager:
     def _handle_connection(self, key):
         conn, addr = self.server_socket.accept()
         try:
-            data = ""
-            while len(data) == 0 or data[-1] != '\0':
-                buf = conn.recv(1024)
-                data += buf.decode('utf-8')
-            data = data[:-1].strip()
+            try:
+                data = ""
+                while len(data) == 0 or data[-1] != '\0':
+                    buf = conn.recv(1024)
+                    data += buf.decode('utf-8')
+                data = data[:-1].strip()
+            except IOError as e:
+                print("Receive connection IO ERROR: " + str(e))
+                pass
+
             val = self._process_command(data.split(" ", 1))
-            conn.send(val.encode('utf-8') + b'\0')
-        except IOError:
-            pass
+
+            try:
+                conn.send(val.encode('utf-8') + b'\0')
+            except IOError as e:
+                print("Send connection IO ERROR: " + str(e))
         finally:
             try:
                 conn.close()
