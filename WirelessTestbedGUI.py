@@ -22,9 +22,9 @@ class Window(QtGui.QMainWindow):
         self.show()
 
         openFile = QtGui.QAction("&Open File", self)
-                openFile.setShortcut("Ctrl+O")
-                openFile.setStatusTip('Open File')
-                openFile.triggered.connect(self.file_open)
+        openFile.setShortcut("Ctrl+O")
+        openFile.setStatusTip('Open File')
+        openFile.triggered.connect(self.file_open)
 
         comboBox = QtGui.QComboBox(self)
         comboBox.addItem("FM")
@@ -42,7 +42,7 @@ class Window(QtGui.QMainWindow):
 
     def send_application(self):
         print("Sending")
-        QProcess::execute(file); #file needs to change to raspberry pi and antenna application
+        # QProcess::execute(file); #file needs to change to raspberry pi and antenna application
      #send code to antenna option
 
     def file_open(self):
