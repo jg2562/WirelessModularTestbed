@@ -374,4 +374,5 @@ def main():
     finally:
         manager.close()
 
-main()
+if __name__ == "__main__":
+    main()

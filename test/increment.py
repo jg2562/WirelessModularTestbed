@@ -40,4 +40,5 @@ def main():
         os.close(in_fh);
         os.close(out_fh);
                 
-main()
+if __name__ == "__main__":
+    main()

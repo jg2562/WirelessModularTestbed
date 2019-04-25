@@ -4,7 +4,7 @@ import time
 
 server_address = "network_command"
 port = 65432
-wifi_add = input("Host IP: ")
+wifi_add = "0.0.0.0"
 wifi_port = 0x1001
 
 def send_command(command):
@@ -42,5 +42,7 @@ def main():
     finally:
         os.close(in_fh);
         os.close(out_fh);
-                
-main()
+
+if __name__ == "__main__":
+    wifi_add =  input("Host IP: ")
+    main()
