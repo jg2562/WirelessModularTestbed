@@ -86,6 +86,8 @@ def main():
     device = args.device
     fm_freq = args.fm_freq
 
+    if device == 'client':
+        bt_add = ""
     # # Start bluetooth
     data = send_command("create bluetooth_{} rw --address {} --port {}".format(device,bt_add,bt_port))
     # data = send_command("create echo rw")
