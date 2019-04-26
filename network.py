@@ -6,6 +6,7 @@ import subprocess as sp
 import selectors
 import json
 import hashlib
+import uuid
 
 class Interface:
     def __init__(self, filename, mode):
@@ -53,6 +54,7 @@ class Antenna:
         # Save off antenna type and modes
         self.ant_type = ant_type
         self.modes = modes
+        self.uuid = uuid.uuid4().hex
 
         # Create a dictionary of all interfaces, also generate interfaces for all files
         self.interfaces = {mode:self._create_interface(self._create_filename(file_path, mode)
@@ -67,7 +69,7 @@ class Antenna:
         self.process = sp.Popen(cmd, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
 
     def name(self):
-        return self.ant_type
+        return self.ant_type+"_"+self.uuid
 
     def get_interfaces(self):
         # Returns all interfaces in order of mode
@@ -87,7 +89,7 @@ class Antenna:
 
     def _create_filename(self, file_path, mode):
         # Creates basic filename based on antenna type and mode
-        return os.path.join(file_path, self.ant_type + "_" + mode)
+        return os.path.join(file_path, self.name()+ "_" + mode)
 
     def _create_interface(self, file, mode):
         return Interface(file, mode)
