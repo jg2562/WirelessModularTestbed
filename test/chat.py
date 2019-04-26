@@ -38,7 +38,7 @@ def send_chat(win, bt, fm):
         msg = win.sendLine.text()
         win.sendLine.setText("")
         # os.write(fm, user.encode('utf-8'))
-        os.write(bt, user.encode('utf-8') + msg.encode('utf-8'))
+        os.write(bt, user.encode('utf-8') + ": ".encode('utf-8') + msg.encode('utf-8'))
     return _send_chat
 
 
