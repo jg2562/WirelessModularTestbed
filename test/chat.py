@@ -37,8 +37,8 @@ def send_chat(win, bt, fm):
         user = win.userLine.text()
         msg = win.sendLine.text()
         win.sendLine.setText("")
-        os.write(fm, user.encode('utf-8'))
-        os.write(bt, msg.encode('utf-8'))
+        # os.write(fm, user.encode('utf-8'))
+        os.write(bt, user.encode('utf-8') + msg.encode('utf-8'))
     return _send_chat
 
 
@@ -49,8 +49,8 @@ def receive_data(win, bt, fm):
     def attempt_process():
         nonlocal meta
         nonlocal msg
-        if meta is not None and msg is not None:
-            win.chatLabel.setText(win.chatLabel.text() + meta + ": " + msg + "\n")
+        if msg is not None:
+            win.chatLabel.setText(win.chatLabel.text() + msg + "\n")
             meta = None
             msg = None
             
@@ -93,16 +93,19 @@ def main():
 
     # # Start fm
     # data = send_command("create fm_{} rw --frequency {}".format(device,fm_freq))
-    data = send_command("create echo rw")
-    fm_in_file, fm_out_file = data.split(" ")
+    # data = send_command("create echo rw")
+    # fm_in_file, fm_out_file = data.split(" ")
+
     out = 1
 
     try:
         # Open file handles
         bt_in_fh = os.open(bt_in_file, os.O_RDONLY)
         bt_out_fh = os.open(bt_out_file, os.O_WRONLY)
-        fm_in_fh = os.open(fm_in_file, os.O_RDONLY)
-        fm_out_fh = os.open(fm_out_file, os.O_WRONLY)
+        # fm_in_fh = os.open(fm_in_file, os.O_RDONLY)
+        # fm_out_fh = os.open(fm_out_file, os.O_WRONLY)
+        fm_in_fh = None
+        fm_out_fh = None
 
         # Wait for connections
         # time.sleep(5)
@@ -116,7 +119,7 @@ def main():
         rec_meta, rec_msg = receive_data(win, bt_in_fh, fm_in_fh)
         try:
             sel.register(bt_in_fh, selectors.EVENT_READ, rec_msg)
-            sel.register(fm_in_fh, selectors.EVENT_READ, rec_meta)
+            # sel.register(fm_in_fh, selectors.EVENT_READ, rec_meta)
 
             win.sendButton.clicked.connect(send_chat(win, bt_out_fh, fm_out_fh))
             win.sendLine.returnPressed.connect(send_chat(win, bt_out_fh, fm_out_fh))
@@ -129,13 +132,13 @@ def main():
         finally:
             del thread
             sel.unregister(bt_in_fh)
-            sel.unregister(fm_in_fh)
+            # sel.unregister(fm_in_fh)
 
     finally:
         os.close(bt_in_fh);
         os.close(bt_out_fh);
-        os.close(fm_in_fh);
-        os.close(fm_out_fh);
+        # os.close(fm_in_fh);
+        # os.close(fm_out_fh);
         pass
     sys.exit(out)
 
