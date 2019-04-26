@@ -87,8 +87,8 @@ def main():
     fm_freq = args.fm_freq
 
     # # Start bluetooth
-    # data = send_command("create bluetooth_{} rw --address {} --port {}".format(device,bt_add,bt_port))
-    data = send_command("create echo rw")
+    data = send_command("create bluetooth_{} rw --address {} --port {}".format(device,bt_add,bt_port))
+    # data = send_command("create echo rw")
     bt_in_file, bt_out_file = data.split(" ")
 
     # # Start fm
