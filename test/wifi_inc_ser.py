@@ -20,7 +20,7 @@ def send_command(command):
 def main():
     try:
         print("Sending command")
-        data = send_command("create wifi_server rw --address {} --port {}".format(wifi_add,wifi_port))
+        data = send_command("create wifi_server rw --port {}".format(wifi_port))
         print("Got data: {}".format(data))
         in_file, out_file = data.split(" ")
 

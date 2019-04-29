@@ -11,7 +11,7 @@ def main():
     parser.add_argument('in_filename')
     parser.add_argument('out_filename')
     parser.add_argument('--port', type=int)
-    parser.add_argument('--address', required=True)
+    parser.add_argument('--address', required=False)
 
     args = parser.parse_args()
     mode = args.mode
@@ -36,17 +36,13 @@ def main():
             wifi_sock, addr=sock.accept()
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             return wifi_sock
-            #msg = input('>')
-            #conn.send(msg.encode('utf-8'))
 
         def client(address, port):
             sock.connect((address, port))
             return sock
-            #data = s.recv(1024)
-            #print(data.decode('utf-8'))
 
-        if (socket.gethostname() == 'raspberrypiA'):
-            return server(args.address, args.port)
+        if args.address is None:
+            return server('', args.port)
         else:
             return client(args.address, args.port)
 
