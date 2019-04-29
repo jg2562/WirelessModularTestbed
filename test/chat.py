@@ -84,7 +84,7 @@ def main():
     parser.add_argument('device', choices=['server','client'])
     parser.add_argument('--bt_add', default="B8:27:EB:64:2E:AB")
     parser.add_argument('--bt_port', type=int, default=0x1001)
-    parser.add_argument('--wifi_add', required=True)
+    parser.add_argument('--wifi_add', required=False)
     parser.add_argument('--wifi_port', type=float, default=3001)
 
     args = parser.parse_args()
@@ -95,6 +95,10 @@ def main():
     device = args.device
     wifi_add = args.wifi_add
     wifi_port = args.wifi_port
+
+    if device == 'client' and wifi_add is None:
+        print("Client needs wifi address")
+        raise ValueError("Bad wifi address")
 
     # # Start bluetooth
     if device == 'client':
