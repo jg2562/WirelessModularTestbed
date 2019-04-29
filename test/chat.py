@@ -32,28 +32,33 @@ def send_command(command):
             data += buf.decode('utf-8')
         return data[:-1].strip()
 
-def send_chat(win, bt, fm):
+def send_chat(win, bt, wifi):
     def _send_chat():
-        user = win.userLine.text()
+        meta = win.userLine.text()
         msg = win.sendLine.text()
 
         win.sendLine.setText("")
-        win.chatLabel.setText(win.chatLabel.text() + user + ": " + msg + "\n")
+        add_msg(win.chatLabel, meta, msg)
         
-        # os.write(fm, user.encode('utf-8'))
-        os.write(bt, user.encode('utf-8') + ": ".encode('utf-8') + msg.encode('utf-8'))
+        os.write(wifi, meta.encode('utf-8'))
+        os.write(bt, msg.encode('utf-8'))
     return _send_chat
 
+def add_msg(label, meta, msg):
+    label.setText(label.text() + combine_msg(meta, msg) + "\n")
 
-def receive_data(win, bt, fm):
+def combine_msg(meta, msg):
+    return meta + ": " + msg
+
+def receive_data(win, bt, wifi):
     meta = None
     msg = None
 
     def attempt_process():
         nonlocal meta
         nonlocal msg
-        if msg is not None:
-            win.chatLabel.setText(win.chatLabel.text() + msg + "\n")
+        if meta is not None and msg is not None:
+            add_msg(win.chatLabel, meta, msg)
             meta = None
             msg = None
             
@@ -61,7 +66,7 @@ def receive_data(win, bt, fm):
         nonlocal meta
         if meta:
             return
-        meta = os.read(fm, 1024).decode('utf-8')
+        meta = os.read(wifi, 1024).decode('utf-8')
         attempt_process()
 
     def receive_msg():
@@ -77,9 +82,10 @@ def main():
     # Get arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('device', choices=['server','client'])
-    parser.add_argument('--bt_add', default="B8:27:EB:4B:65:06")
+    parser.add_argument('--bt_add', default="B8:27:EB:64:2E:AB")
     parser.add_argument('--bt_port', type=int, default=0x1001)
-    parser.add_argument('--fm_freq', type=float, default=101.1)
+    parser.add_argument('--wifi_add', required=True)
+    parser.add_argument('--wifi_port', type=float, default=3001)
 
     args = parser.parse_args()
 
@@ -87,20 +93,23 @@ def main():
     bt_add = args.bt_add
     bt_port = args.bt_port
     device = args.device
-    fm_freq = args.fm_freq
+    wifi_add = args.wifi_add
+    wifi_port = args.wifi_port
 
     # # Start bluetooth
     if device == 'client':
         data = send_command("create bluetooth_client rw --address {} --port {}".format(bt_add,bt_port))
     else:
         data = send_command("create bluetooth_server rw --port {}".format(bt_port))
-    # data = send_command("create echo rw")
     bt_in_file, bt_out_file = data.split(" ")
 
-    # # Start fm
-    # data = send_command("create fm_{} rw --frequency {}".format(device,fm_freq))
-    # data = send_command("create echo rw")
-    # fm_in_file, fm_out_file = data.split(" ")
+    # Start wifi
+    if device == 'client':
+        data = send_command("create wifi_client rw --address {} --port {}".format(wifi_add,wifi_port))
+    else:
+        data = send_command("create wifi_server rw --port {}".format(wifi_port))
+
+    wifi_in_file, wifi_out_file = data.split(" ")
 
     out = 1
 
@@ -108,10 +117,8 @@ def main():
         # Open file handles
         bt_in_fh = os.open(bt_in_file, os.O_RDONLY)
         bt_out_fh = os.open(bt_out_file, os.O_WRONLY)
-        # fm_in_fh = os.open(fm_in_file, os.O_RDONLY)
-        # fm_out_fh = os.open(fm_out_file, os.O_WRONLY)
-        fm_in_fh = None
-        fm_out_fh = None
+        wifi_in_fh = os.open(wifi_in_file, os.O_RDONLY)
+        wifi_out_fh = os.open(wifi_out_file, os.O_WRONLY)
 
         # Wait for connections
         # time.sleep(5)
@@ -122,13 +129,13 @@ def main():
 
         sel = selectors.DefaultSelector()
 
-        rec_meta, rec_msg = receive_data(win, bt_in_fh, fm_in_fh)
+        rec_meta, rec_msg = receive_data(win, bt_in_fh, wifi_in_fh)
         try:
             sel.register(bt_in_fh, selectors.EVENT_READ, rec_msg)
-            # sel.register(fm_in_fh, selectors.EVENT_READ, rec_meta)
+            sel.register(wifi_in_fh, selectors.EVENT_READ, rec_meta)
 
-            win.sendButton.clicked.connect(send_chat(win, bt_out_fh, fm_out_fh))
-            win.sendLine.returnPressed.connect(send_chat(win, bt_out_fh, fm_out_fh))
+            win.sendButton.clicked.connect(send_chat(win, bt_out_fh, wifi_out_fh))
+            win.sendLine.returnPressed.connect(send_chat(win, bt_out_fh, wifi_out_fh))
 
             thread = DataThread(sel)
             thread.start()
@@ -138,13 +145,13 @@ def main():
         finally:
             del thread
             sel.unregister(bt_in_fh)
-            # sel.unregister(fm_in_fh)
+            sel.unregister(wifi_in_fh)
 
     finally:
         os.close(bt_in_fh);
         os.close(bt_out_fh);
-        # os.close(fm_in_fh);
-        # os.close(fm_out_fh);
+        os.close(wifi_in_fh);
+        os.close(wifi_out_fh);
         pass
     sys.exit(out)
 
