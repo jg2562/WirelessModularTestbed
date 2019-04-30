@@ -376,6 +376,8 @@ def main():
     try:
         while True:
             manager.process()
+    except KeyboardInterrupt:
+        print("\nClosing...")
     finally:
         manager.close()
 
