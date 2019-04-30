@@ -304,7 +304,6 @@ class NetworkManager:
         antenna.close()
         # Remove stored antenna
         self.antennas.remove(antenna)
-        del self.antenna_dict[antenna.name()]
 
     def _antenna_error(self, key):
         # Let use know antenna failed
