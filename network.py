@@ -292,10 +292,12 @@ class NetworkManager:
         # Parse out command and call command
         command_name, command_data = command_list
         try:
-            return commands[command_name](command_data)
+            command_func = commands[command_name]
         except KeyError:
             print("Invalid command: " + str(command_name))
             return "".encode('utf-8')
+
+        return command_func(command_data)
 
     def _close_antenna(self, antenna):
         # Unregister the antenna standard error
