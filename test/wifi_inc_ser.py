@@ -21,7 +21,7 @@ def main():
         print("Sending command")
         data = send_command("create wifi_server rw --port {}".format(wifi_port))
         print("Got data: {}".format(data))
-        in_file, out_file = data.split(" ")
+        ant_id, in_file, out_file = data.split(" ")
 
         in_fh = os.open(in_file, os.O_RDONLY)
         out_fh = os.open(out_file, os.O_WRONLY)

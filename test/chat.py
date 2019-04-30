@@ -105,7 +105,7 @@ def main():
         data = send_command("create bluetooth_client rw --address {} --port {}".format(bt_add,bt_port))
     else:
         data = send_command("create bluetooth_server rw --port {}".format(bt_port))
-    bt_in_file, bt_out_file = data.split(" ")
+    bt_id, bt_in_file, bt_out_file = data.split(" ")
 
     # Start wifi
     if device == 'client':
@@ -113,7 +113,7 @@ def main():
     else:
         data = send_command("create wifi_server rw --port {}".format(wifi_port))
 
-    wifi_in_file, wifi_out_file = data.split(" ")
+    wifi_id, wifi_in_file, wifi_out_file = data.split(" ")
 
     out = 1
 

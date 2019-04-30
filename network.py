@@ -181,7 +181,7 @@ class NetworkManager:
         self.sel.register(antenna.get_stderr(), selectors.EVENT_READ, data=(self._antenna_error, antenna))
 
         # Return interfaces to antenna
-        return " ".join([interface.get_file() for interface in antenna.get_interfaces()]).encode('utf-8')
+        return " ".join([antenna.name()] + [interface.get_file() for interface in antenna.get_interfaces()]).encode('utf-8')
 
     def _create_attach_connection(self, data):
         # Get information from data
