@@ -37,7 +37,7 @@
 
 <span class="n">server_address</span> <span class="o">=</span> <span class="s2">&quot;network_command&quot;</span>
 <span class="n">port</span> <span class="o">=</span> <span class="mi">65432</span>
-<span class="n">wifi_port</span> <span class="o">=</span> <span class="mh">0x1001</span>
+<span class="n">wifi_port</span> <span class="o">=</span> <span class="mi">3001</span>
 
 <div class="viewcode-block" id="send_command"><a class="viewcode-back" href="../../../WirelessModularTestbed.test.html#WirelessModularTestbed.test.wifi_inc_ser.send_command">[docs]</a><span class="k">def</span> <span class="nf">send_command</span><span class="p">(</span><span class="n">command</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_UNIX</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="k">as</span> <span class="n">sock</span><span class="p">:</span>
@@ -45,16 +45,16 @@
         <span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="s1">&#39;</span><span class="se">\0</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;</span><span class="se">\0</span><span class="s1">&#39;</span><span class="p">:</span>
-            <span class="n">buf</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
-            <span class="n">data</span> <span class="o">+=</span> <span class="n">buf</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">buff</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">+=</span> <span class="n">buff</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../WirelessModularTestbed.test.html#WirelessModularTestbed.test.wifi_inc_ser.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sending command&quot;</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">send_command</span><span class="p">(</span><span class="s2">&quot;create wifi_server rw --port &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">wifi_port</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">send_command</span><span class="p">(</span><span class="s2">&quot;create wifi_server rw --port {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wifi_port</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Got data: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-        <span class="n">in_file</span><span class="p">,</span> <span class="n">out_file</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">ant_id</span><span class="p">,</span> <span class="n">in_file</span><span class="p">,</span> <span class="n">out_file</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
 
         <span class="n">in_fh</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDONLY</span><span class="p">)</span>
         <span class="n">out_fh</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span><span class="p">)</span>

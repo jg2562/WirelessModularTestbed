@@ -31,12 +31,15 @@
           <div class="body" role="main">
             
   <h1>Source code for WirelessModularTestbed.network</h1><div class="highlight"><pre>
+<span class="ch">#!/usr/bin python3</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">subprocess</span> <span class="k">as</span> <span class="nn">sp</span>
 <span class="kn">import</span> <span class="nn">selectors</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
 
 <div class="viewcode-block" id="Interface"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Interface">[docs]</a><span class="k">class</span> <span class="nc">Interface</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
@@ -84,6 +87,7 @@
         <span class="c1"># Save off antenna type and modes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ant_type</span> <span class="o">=</span> <span class="n">ant_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="n">modes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span>
 
         <span class="c1"># Create a dictionary of all interfaces, also generate interfaces for all files</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span> <span class="o">=</span> <span class="p">{</span><span class="n">mode</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_interface</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_filename</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
@@ -98,7 +102,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Antenna.name"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ant_type</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ant_type</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span></div>
+
+<div class="viewcode-block" id="Antenna.is_closed"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.is_closed">[docs]</a>    <span class="k">def</span> <span class="nf">is_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_open</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Antenna.is_open"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.is_open">[docs]</a>    <span class="k">def</span> <span class="nf">is_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="Antenna.get_interfaces"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.get_interfaces">[docs]</a>    <span class="k">def</span> <span class="nf">get_interfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Returns all interfaces in order of mode</span>
@@ -108,17 +118,32 @@
         <span class="c1"># Call the interface</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="Antenna.status"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Working&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_open</span><span class="p">()</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="Antenna.close"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Kill process, then close all interfaces</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
-        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">]</span></div>
+        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interfaces</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">sp</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">sp</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to close antenna&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;Failed to kill&quot;</span></div>
 
 <div class="viewcode-block" id="Antenna.get_stderr"><a class="viewcode-back" href="../../WirelessModularTestbed.html#WirelessModularTestbed.network.Antenna.get_stderr">[docs]</a>    <span class="k">def</span> <span class="nf">get_stderr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">stderr</span></div>
 
     <span class="k">def</span> <span class="nf">_create_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
         <span class="c1"># Creates basic filename based on antenna type and mode</span>
-        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ant_type</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">mode</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Interface</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span></div>
@@ -210,7 +235,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sel</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">antenna</span><span class="o">.</span><span class="n">get_stderr</span><span class="p">(),</span> <span class="n">selectors</span><span class="o">.</span><span class="n">EVENT_READ</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_antenna_error</span><span class="p">,</span> <span class="n">antenna</span><span class="p">))</span>
 
         <span class="c1"># Return interfaces to antenna</span>
-        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span> <span class="k">for</span> <span class="n">interface</span> <span class="ow">in</span> <span class="n">antenna</span><span class="o">.</span><span class="n">get_interfaces</span><span class="p">()])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">antenna</span><span class="o">.</span><span class="n">name</span><span class="p">()]</span> <span class="o">+</span> <span class="p">[</span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">()</span> <span class="k">for</span> <span class="n">interface</span> <span class="ow">in</span> <span class="n">antenna</span><span class="o">.</span><span class="n">get_interfaces</span><span class="p">()])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_attach_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="c1"># Get information from data</span>
@@ -249,6 +274,17 @@
         <span class="c1"># Run shell command</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">info_type</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">antenna_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">antenna</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antenna_dict</span><span class="p">[</span><span class="n">antenna_id</span><span class="p">]</span>
+
+        <span class="n">info_types</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">antenna</span><span class="o">.</span><span class="n">status</span><span class="p">}</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">info_types</span><span class="p">[</span><span class="n">info_type</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">cmd</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_upload_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="c1"># Create Hash algorithm</span>
@@ -317,23 +353,31 @@
                     <span class="s2">&quot;create_attach&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_attach_connection</span><span class="p">,</span>
                     <span class="s2">&quot;upload&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upload_file</span><span class="p">,</span>
                     <span class="s2">&quot;download&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">,</span>
+                    <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_info</span><span class="p">,</span>
+                    <span class="s2">&quot;close&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_close_connection</span><span class="p">,</span>
                     <span class="s2">&quot;run&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_shell_command</span><span class="p">}</span>
         <span class="c1"># Parse out command and call command</span>
         <span class="n">command_name</span><span class="p">,</span> <span class="n">command_data</span> <span class="o">=</span> <span class="n">command_list</span>
+
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">commands</span><span class="p">[</span><span class="n">command_name</span><span class="p">](</span><span class="n">command_data</span><span class="p">)</span>
+            <span class="n">command_func</span> <span class="o">=</span> <span class="n">commands</span><span class="p">[</span><span class="n">command_name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid command: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">command_name</span><span class="p">))</span>
             <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 
+        <span class="k">return</span> <span class="n">command_func</span><span class="p">(</span><span class="n">command_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_close_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">antenna_id</span><span class="p">):</span>
+        <span class="n">antenna</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antenna_dict</span><span class="p">[</span><span class="n">antenna_id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_close_antenna</span><span class="p">(</span><span class="n">antenna</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_close_antenna</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">antenna</span><span class="p">):</span>
         <span class="c1"># Unregister the antenna standard error</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sel</span><span class="o">.</span><span class="n">unregister</span><span class="p">(</span><span class="n">antenna</span><span class="o">.</span><span class="n">get_stderr</span><span class="p">())</span>
-        <span class="c1"># Close antenna</span>
-        <span class="n">antenna</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="c1"># Remove stored antenna</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">antennas</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">antenna</span><span class="p">)</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">antenna_dict</span><span class="p">[</span><span class="n">antenna</span><span class="o">.</span><span class="n">name</span><span class="p">()]</span>
+        <span class="c1"># Close antenna</span>
+        <span class="k">return</span> <span class="n">antenna</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_antenna_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="c1"># Let use know antenna failed</span>
@@ -404,6 +448,8 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">manager</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Closing...&quot;</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">manager</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 

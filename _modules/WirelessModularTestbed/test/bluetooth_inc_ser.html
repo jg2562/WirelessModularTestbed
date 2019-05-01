@@ -54,24 +54,29 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sending command&quot;</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">send_command</span><span class="p">(</span><span class="s2">&quot;create bluetooth_server rw --port &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">bt_port</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Got data: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-        <span class="n">in_file</span><span class="p">,</span> <span class="n">out_file</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">ant_id</span><span class="p">,</span> <span class="n">in_file</span><span class="p">,</span> <span class="n">out_file</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
 
         <span class="n">in_fh</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDONLY</span><span class="p">)</span>
         <span class="n">out_fh</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting communication&quot;</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">buff</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">in_fh</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="n">buff</span><span class="p">:</span>
                     <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">buff</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
                     <span class="c1">#print(num)</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_fh</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
                     
-                    <span class="k">if</span> <span class="p">(</span><span class="n">num</span><span class="o">%</span><span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="mi">500</span><span class="p">):</span>
                         <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
                         <span class="n">dt</span> <span class="o">=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="mi">1000</span><span class="o">/</span><span class="n">dt</span><span class="p">,</span> <span class="s1">&#39;Mb/s&#39;</span><span class="p">)</span>
+                        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="n">rate</span> <span class="o">=</span> <span class="mf">0.001</span><span class="o">/</span><span class="n">dt</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%.2f</span><span class="s1"> Mb/s&#39;</span> <span class="o">%</span><span class="n">rate</span><span class="p">)</span>
                         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">BlockingIOError</span> <span class="k">as</span> <span class="n">E</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">E</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="mi">11</span><span class="p">:</span>
