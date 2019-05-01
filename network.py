@@ -336,16 +336,15 @@ class NetworkManager:
 
     def _close_connection(self, antenna_id):
         antenna = self.antenna_dict[antenna_id]
-        self._close_antenna(antenna)
-        return antenna.status().encode('utf-8')
+        return self._close_antenna(antenna).encode('utf-8')
 
     def _close_antenna(self, antenna):
         # Unregister the antenna standard error
         self.sel.unregister(antenna.get_stderr())
-        # Close antenna
-        antenna.close()
         # Remove stored antenna
         self.antennas.remove(antenna)
+        # Close antenna
+        return antenna.close()
 
     def _antenna_error(self, key):
         # Let use know antenna failed
