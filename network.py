@@ -54,7 +54,7 @@ class Antenna:
         # Save off antenna type and modes
         self.ant_type = ant_type
         self.modes = modes
-        self.uuid = uuid.uuid4().hex
+        self.uuid = uuid.uuid4().hex[:8]
 
         # Create a dictionary of all interfaces, also generate interfaces for all files
         self.interfaces = {mode:self._create_interface(self._create_filename(file_path, mode)
