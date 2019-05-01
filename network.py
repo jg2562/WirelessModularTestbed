@@ -92,6 +92,18 @@ class Antenna:
         # Kill process, then close all interfaces
         self.process.terminate()
         [self.interfaces[mode].close() for mode in self.interfaces]
+        try:
+            return str(self.process.wait(timeout=1))
+        except sp.TimeoutExpired:
+            pass
+
+        self.process.kill()
+        try:
+            return str(self.process.wait(timeout=1))
+        except sp.TimeoutExpired:
+            pass
+        print("Failed to close antenna")
+        return "Failed to kill"
 
     def get_stderr(self):
         return self.process.stderr
@@ -309,6 +321,7 @@ class NetworkManager:
                     "upload": self._upload_file,
                     "download": self._download_file,
                     "info": self._get_info,
+                    "close": self._close_connection,
                     "run": self._run_shell_command}
         # Parse out command and call command
         command_name, command_data = command_list
@@ -320,6 +333,11 @@ class NetworkManager:
             return "".encode('utf-8')
 
         return command_func(command_data)
+
+    def _close_connection(self, antenna_id):
+        antenna = self.antenna_dict[antenna_id]
+        self._close_antenna(antenna)
+        return antenna.status().encode('utf-8')
 
     def _close_antenna(self, antenna):
         # Unregister the antenna standard error
