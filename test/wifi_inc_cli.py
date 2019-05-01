@@ -4,8 +4,6 @@ import time
 
 server_address = "network_command"
 port = 65432
-wifi_add = input("Enter IP: ")
-wifi_port = 3001
 
 def send_command(command):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
@@ -19,6 +17,9 @@ def send_command(command):
 
 def main():
     try:
+        wifi_add = input("Enter IP: ")
+        wifi_port = 3001
+
         print("Sending command")
         data = send_command("create wifi_client rw --address {} --port {}".format(wifi_add,wifi_port))
         print("Got data: {}".format(data))
