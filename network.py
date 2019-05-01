@@ -71,6 +71,12 @@ class Antenna:
     def name(self):
         return self.ant_type+"_"+self.uuid
 
+    def is_closed(self):
+        return not self.is_open()
+
+    def is_open(self):
+        return self.process.poll() is None
+
     def get_interfaces(self):
         # Returns all interfaces in order of mode
         return [self.interfaces[mode] for mode in self.modes]
@@ -78,6 +84,9 @@ class Antenna:
     def call(self, data):
         # Call the interface
         return self.process.communicate(data, timeout=1)
+
+    def status(self):
+        return "Working" if self.is_open() else str(self.process.returncode)
 
     def close(self):
         # Kill process, then close all interfaces
@@ -221,6 +230,17 @@ class NetworkManager:
         out = sp.run(data, shell=True)
         return str(out.returncode).encode('utf-8')
 
+    def _get_info(self, data):
+        data = data.split(" ")
+        info_type = data[0]
+        antenna_id = data[1]
+        antenna = self.antenna_dict[antenna_id]
+
+        info_types = {"status": antenna.status}
+
+        cmd = info_types[info_type]
+        return cmd().encode('utf-8')
+
     def _upload_file(self, filename):
         # Create Hash algorithm
         hasher = self.hash_algo()
@@ -288,9 +308,11 @@ class NetworkManager:
                     "create_attach": self._create_attach_connection,
                     "upload": self._upload_file,
                     "download": self._download_file,
+                    "info": self._get_info,
                     "run": self._run_shell_command}
         # Parse out command and call command
         command_name, command_data = command_list
+
         try:
             command_func = commands[command_name]
         except KeyError:
