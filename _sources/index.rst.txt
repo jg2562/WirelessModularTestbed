@@ -4,24 +4,19 @@
    contain the root `toctree` directive.
 
 Welcome to Wireless Modular Testbed's documentation!
-==================================================
+===========================================================
 
-Networking Software:
-:ref:`network`
-
-Antenna Software:
-:ref:`antennas`
-
-
+Created for a capstone in order to create a wireless modular testbed. By using it, the user can easily create and attach antennas to existing software.
 
 Software API
 ==============
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
-   WirelessModularTestbed
-
+   tutorial/index
+   reference/index
+   developer/index
 
 
 Indices and tables
