@@ -2,6 +2,7 @@
 import argparse
 import os
 import time
+import selectors
 
 def main():
     parser = argparse.ArgumentParser()
@@ -15,21 +16,23 @@ def main():
         print("Bad mode for echo")
         exit(1)
 
-    fh_out = os.open(args.in_filename, os.O_WRONLY)
-    fh_in = os.open(args.out_filename, os.O_RDONLY|os.O_NONBLOCK)
+    sel = selectors.DefaultSelector()
 
-    print("Waiting for comms")
     try:
+        fh_out = os.open(args.in_filename, os.O_WRONLY)
+        fh_in = os.open(args.out_filename, os.O_RDONLY)
+
+        sel.register(fh_in, selectors.EVENT_READ)
+
         while True:
-            try:
+            events = sel.select()
+            if events:
                 buff = os.read(fh_in, 1024)
                 if buff:
                     os.write(fh_out, buff)
-            except BlockingIOError as E:
-                if E.errno != 11:
-                    raise E
 
     finally:
+        sel.unregister(fh_in)
         os.close(fh_in)
         os.close(fh_out)
 
